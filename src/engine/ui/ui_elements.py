@@ -17,13 +17,19 @@ class UI_Handler:
 
     def __init__(self):
 
-        self.input_fields = []
-        self.pickers = []
-        self.buttons = []
-        self.labels = []
+        self.canvases       = []
+        self.input_fields   = []
+        self.pickers        = []
+        self.buttons        = []
+        self.image_labels   = []
+        self.labels         = []
     
     # Draw the ui elements
     def draw_ui(self, surface):
+
+        # Draw the canvases
+        for canvas in self.canvases:
+            canvas.draw_canvas(surface)
 
         # Draw the input fields
         for input_field in self.input_fields:
@@ -37,6 +43,10 @@ class UI_Handler:
         for button in self.buttons:
             button.draw_button(surface)
         
+        # Draw the Image labels
+        for image_label in self.image_labels:
+            image_label.draw_image(surface)
+
         # Draw the labels
         for label in self.labels:
             label.draw_label(surface)
@@ -76,7 +86,23 @@ class Label:
             self.color = Label._DEFAULT_COLOR
 
         # Add self to ui_handler labels list
-        ui_handler.labels.append(self)
+        self.ui_handler = ui_handler
+        self.ui_handler.labels.append(self)
+
+    # Delete label
+    def delete_ui_object(self):
+
+        index_to_delete = None
+
+        for i in range(len(self.ui_handler.labels)):
+
+            if self.ui_handler.labels[i] == self:
+
+                index_to_delete = i
+
+        if index_to_delete is not None:
+
+            del self.ui_handler.labels[index_to_delete]
 
     # Get the height and width of the text    
     def get_text_size(self):
@@ -98,6 +124,77 @@ class Label:
             self.visible = not self.visible
         else:
             self.visible = value
+
+
+class ImageLabel:
+
+    _DEFAULT_IMAGE_PATH = "assets/ui/label_background_"
+
+    def __init__(self, ui_handler, pos, text, font = None, color = None, image=None, size="medium"):
+
+        # initalize image
+        if image is None:
+            self.image = pg.image.load(ImageLabel._DEFAULT_IMAGE_PATH + size + ".png")
+        else:
+            self.image = pg.image.load(image)
+        # initialize self
+        self.rect = pg.Rect(pos, (self.image.get_width(), self.image.get_height()))
+        self.visible = True
+
+        # initialize label
+        self.label = Label(ui_handler, pos, text, font, color)
+        self.set_label_position()
+
+        # add self to ui handler's image label list
+        self.ui_handler = ui_handler
+        self.ui_handler.image_labels.append(self)
+
+    # Delete image label
+    def delete_ui_object(self):
+
+        index_to_delete = None
+
+        for i in range(len(self.ui_handler.image_labels)):
+
+            if self.ui_handler.image_labels[i] == self:
+
+                index_to_delete = i
+
+        if index_to_delete is not None:
+
+            del self.ui_handler.image_labels[index_to_delete]
+        
+        # delete children
+        self.label.delete_ui_object()
+
+    def draw_image(self, surface):
+
+        if self.visible:
+
+            surface.blit(self.image, self.rect)
+
+    def change_visiblity(self, value = None):
+
+        if value is None:
+            self.visible = not self.visible
+        else:
+            self.visible = value
+
+        if self.label is not None:
+
+            self.label.visible = self.visible
+
+    def set_label_position(self):
+
+        self.label_size = self.label.get_text_size()
+
+        x_margin = (self.rect.width - self.label_size[0])
+        y_margin = (self.rect.height - self.label_size[1])
+
+        # Set the x position
+        self.label.pos[0] = self.rect.x + ( x_margin / 2 )
+        # Set the y position
+        self.label.pos[1] = self.rect.y + ( y_margin / 2 )
 
 
 # BUTTON -------------------------------------------------------------
@@ -130,7 +227,28 @@ class Button:
             self.label = None
 
         # Add self to ui_handler buttons list
-        ui_handler.buttons.append(self)
+        self.ui_handler = ui_handler
+        self.ui_handler.buttons.append(self)
+
+    # Delete button
+    def delete_ui_object(self):
+
+        index_to_delete = None
+
+        for i in range(len(self.ui_handler.buttons)):
+
+            if self.ui_handler.buttons[i] == self:
+
+                index_to_delete = i
+
+        if index_to_delete is not None:
+
+            del self.ui_handler.buttons[index_to_delete]
+        
+        # delete children
+        if self.label is not None:
+            
+            self.label.delete_ui_object()
 
     # Draw the button -This functions is automaticly called by ui_handler-
     def draw_button(self, surface):
@@ -196,7 +314,7 @@ class Button:
 
 
 # TEXT PICKER --------------------------------------------------------
-class TextPicker():
+class TextPicker:
 
     DEFAULT_PATH = 'assets/ui/input_field_'
 
@@ -209,7 +327,8 @@ class TextPicker():
         self.text_list = text_list
         self.counter = 0
         # Add self to ui_handler pickers list
-        ui_handler.pickers.append(self)
+        self.ui_handler = ui_handler
+        self.ui_handler.pickers.append(self)
 
         # Initialize childs
         # Initialize label
@@ -240,6 +359,26 @@ class TextPicker():
             text            = right_button_text
         )
 
+    # Delete text picker
+    def delete_ui_object(self):
+
+        index_to_delete = None
+
+        for i in range(len(self.ui_handler.pickers)):
+
+            if self.ui_handler.pickers[i] == self:
+
+                index_to_delete = i
+
+        if index_to_delete is not None:
+
+            del self.ui_handler.pickers[index_to_delete]
+        
+        # delete children
+        self.label.delete_ui_object()
+        self.right_button.delete_ui_object()
+        self.left_button.delete_ui_object()
+
     # Draw the text picker -This functions is automaticly called by ui_handler-
     def draw_picker(self, surface):
 
@@ -255,8 +394,8 @@ class TextPicker():
             self.visible = value
 
         self.label.visible = self.visible
-        self.left_button.visible = self.visible
-        self.right_button.visible = self.visible
+        self.left_button.change_visiblity(self.visible)
+        self.right_button.change_visiblity(self.visible)
 
     # Return the current text in the label
     def return_label(self):
@@ -332,7 +471,26 @@ class InputField:
         self.set_label_position()
 
         # Add self to ui_handlers childs
-        ui_handler.input_fields.append(self)
+        self.ui_handler = ui_handler
+        self.ui_handler.input_fields.append(self)
+
+    # Delete input field
+    def delete_ui_object(self):
+
+        index_to_delete = None
+
+        for i in range(len(self.ui_handler.input_fields)):
+
+            if self.ui_handler.input_fields[i] == self:
+
+                index_to_delete = i
+
+        if index_to_delete is not None:
+
+            del self.ui_handler.input_fields[index_to_delete]
+        
+        # delete children
+        self.label.delete_ui_object()
 
     # Draw the input fields borders
     def draw_input_field(self, surface):
@@ -434,17 +592,60 @@ class InputField:
                 self.get_keys_pressed(event_list)
 
 
+# CANVAS -------------------------------------------------------------
 class Canvas:
 
     
-    def __init__(self, pos, size, childs, visible=False):
+    def __init__(self, ui_handler, pos, children, visible=False, size = (1280, 720), image = None):
 
-        self.rect = pg.Rect(pos, size)
+        if image is not None:
+
+            self.image = pg.image.load(image)
+            self.rect = pg.Rect(pos, (self.image.get_width(), self.image.get_height()))
+        else:
+
+            self.image = None
+            self.rect = pg.Rect(pos, size)
+
         self.visible = visible
 
-        self.childs = childs
+        self.children = children
         self.set_children_visiblity()
+
+        self.ui_handler = ui_handler
+        self.ui_handler.canvases.append(self)
     
+    def delete_ui_object(self):
+
+        index_to_delete = None
+
+        for i in range(len(self.ui_handler.canvases)):
+
+            if self.ui_handler.canvases[i] == self:
+
+                index_to_delete = i
+        
+        if index_to_delete is not None:
+
+            del self.ui_handler.canvases[index_to_delete]
+
+    def destroy_canvas(self):
+
+        while len(self.children) > 0:
+
+            for child in self.children:
+
+                child.delete_ui_object()
+                self.children.remove(child)
+
+        self.delete_ui_object()
+
+    def draw_canvas(self, surface):
+
+        if self.image is not None and self.visible:
+
+            surface.blit(self.image, self.rect)
+
     def change_visiblity(self, value = None):
 
         if value is None:
@@ -456,6 +657,6 @@ class Canvas:
 
     def set_children_visiblity(self):
 
-        for child in self.childs:
+        for child in self.children:
 
             child.change_visiblity(self.visible)

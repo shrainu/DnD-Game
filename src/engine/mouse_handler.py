@@ -18,6 +18,8 @@ class MouseHandler:
         self.cursor_image = pg.image.load(MouseHandler.DEFAULT_CURSOR)
         self.rect = pg.Rect((0, 0), (self.cursor_image.get_width(), self.cursor_image.get_height()))
 
+        self.mouse_in_window = True
+
         self.pathfinder = pathfinder
         self.player_ref = player
 
@@ -28,8 +30,10 @@ class MouseHandler:
     
     def draw(self, surface):
 
-        self.draw_tile_highlight(surface)
-        self.draw_cursor(surface)
+        if self.mouse_in_window:
+
+            self.draw_tile_highlight(surface)
+            self.draw_cursor(surface)
 
     def draw_cursor(self, surface):
 
@@ -69,6 +73,15 @@ class MouseHandler:
     def update_cursor_pos(self, mouse_pos):
 
         self.rect.x, self.rect.y = mouse_pos
+        
+    def detect_mouse_in_window(self):
+
+        if pg.mouse.get_focused() == 0:
+
+            self.mouse_in_window = False
+        else:
+
+            self.mouse_in_window = True
 
     def handle_mouse_events(self, event_list, current_tilemap):
 
@@ -108,6 +121,10 @@ class MouseHandler:
 
     def update(self, event_list, current_tilemap):
 
-        self.handle_mouse_events(event_list, current_tilemap)
+        self.detect_mouse_in_window()
+        
+        if self.mouse_in_window:
+
+            self.handle_mouse_events(event_list, current_tilemap)
 
 

@@ -1,3 +1,6 @@
+import src.engine.scene_manager as SceneManager
+import src.engine.debugger as Debugger
+
 import os
 import pygame as pg
 
@@ -18,7 +21,13 @@ class Tilemap:
         if matrix is None and size is not None:
             self.create_tilemap()
         elif matrix is not None:
-            self.create_tilemap_from_matrix(matrix)
+            if type(matrix) == str:
+                self.create_tilemap_from_matrix(filepath=matrix)
+            elif type(matrix) == list:
+                self.create_tilemap_from_matrix(matrix_list=matrix)
+            else:
+                Debugger.Log_Manager.add_to_log_file("Wrong input given while creating a tilemap instance: Error_TYPE : Wrong input type, type given " + str(type(matrix)))
+                return
         else:
             print("Error no matrix and tile map size given!")
         
@@ -38,12 +47,17 @@ class Tilemap:
                 t = Grid((self.pos[0] + (self.tile_size * x), self.pos[1] + (self.tile_size * y)), (x, y), self.tile_images[0])
                 self.tiles.append(t)
 
-    def create_tilemap_from_matrix(self, filepath):
+    def create_tilemap_from_matrix(self, filepath="", matrix_list=None):
 
-        matrix_file = open(filepath, 'r')
+        if matrix_list == None:
 
-        matrix = matrix_file.read()
-        matrix = eval(matrix)
+            matrix_file = open(filepath, 'r')
+
+            matrix = matrix_file.read()
+            matrix = eval(matrix)
+        else:
+            
+            matrix = matrix_list
 
         self.tilemap_size = (len(matrix[0]), len(matrix))
 
@@ -58,6 +72,14 @@ class Tilemap:
 
                     t = Grid((self.pos[0] + (self.tile_size * x), self.pos[1] + (self.tile_size * y)), (x, y), self.tile_images[matrix[y][x]])
                     t.obstacle = True
+                    self.tiles.append(t)
+                if matrix[y][x] == 2:
+
+                    t = Grid((self.pos[0] + (self.tile_size * x), self.pos[1] + (self.tile_size * y)), (x, y), self.tile_images[matrix[y][x]])
+                    self.tiles.append(t)
+                if matrix[y][x] == 3:
+
+                    t = Grid((self.pos[0] + (self.tile_size * x), self.pos[1] + (self.tile_size * y)), (x, y), self.tile_images[matrix[y][x]])
                     self.tiles.append(t)
         
         self.rect = pg.Rect(self.pos, (len(matrix[0]) * self.tile_size, len(matrix) * self.tile_size))

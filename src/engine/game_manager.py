@@ -31,7 +31,7 @@ class Game_Manager:
             # Do the same for the .env file
             with open("C:/Users/" + os.getlogin() + "/AppData/LocalLow/" + Game_Manager.game_name + "/.env", 'w') as envi_file:
 
-                envi_file.write("INITIALIZED=False\nUSERNAME=None\nPATH_TO_SAVES=None\n")
+                envi_file.write("INITIALIZED=False\nUSERNAME=None\nPATH_TO_SAVES=None\nPATH_TO_CURRENT_CHARACTER=None\n")
 
         # Save the .env files file path
         Game_Manager.env_file = dotenv.find_dotenv("C:/Users/" + os.getlogin() + "/AppData/LocalLow/" + Game_Manager.game_name + "/.env")

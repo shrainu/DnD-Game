@@ -10,9 +10,10 @@ from src.engine.tilemap import Tilemap
 from src.player.player import Player
 # Import Scenes
 from src.scenes.main_menu import Main_Menu
+from src.scenes.character_creation import Character_Creation
+from src.scenes.main_hub import Main_Hub
 from src.scenes.dungeon import Dungeon
 # import external modules
-import sys
 import pygame as pg
 
 
@@ -27,11 +28,7 @@ class Game:
         self.WIDTH, self.HEIGHT = self.screen.get_size()
 
         # Game variables
-        # Set the Scene Manager variables
-        # To determine which scene is currently active
-        self.current_scene = SceneManager.Scene_Manager.get_current_scene()
-        # To make it easier to switch scenes
-        SceneManager.Scene_Manager.game_instance = self
+        Debugger.Debugger.debug_mode(True)
 
         # Log Manager
         self.log_manager = Debugger.Log_Manager()
@@ -44,12 +41,21 @@ class Game:
         self.timer_handler = Time.Timer_Handler()
         Time.Timer.timer_handler = self.timer_handler
 
-        # Scenes
+        # Create Scenes
         # Main Menu scene
         self.main_menu_scene = Main_Menu(self.screen, self.clock)
-
+        # Character Creation
+        self.character_creation_scene = Character_Creation(self.screen, self.clock)
+        # Hub Scene
+        self.main_hub_scene = Main_Hub(self.screen, self.clock, self.timer_handler)
         # Dungeon Scene
         self.dungeon_scene = Dungeon(self.screen, self.clock, self.timer_handler)
+
+        # Add all a reference of all the scenes to scene manager
+        SceneManager.Scene_Manager.scenes.append(self.main_menu_scene)              # Scene number: 0
+        SceneManager.Scene_Manager.scenes.append(self.character_creation_scene)     # Scene number: 1
+        SceneManager.Scene_Manager.scenes.append(self.main_hub_scene)               # Scene number: 2
+        SceneManager.Scene_Manager.scenes.append(self.dungeon_scene)                # Scene number: 3
 
     def run(self):
 
@@ -63,33 +69,15 @@ class Game:
 
     def events(self):
 
-        # Events function of main menu scene
-        if self.current_scene == SceneManager.Scenes.main_menu:
-
-            self.main_menu_scene.events()
-        # Events function of dungeon scene
-        elif self.current_scene == SceneManager.Scenes.dungeon:
-
-            self.dungeon_scene.events()
+        # Call the events function of current scene
+        SceneManager.Scene_Manager.events()
 
     def update(self):
         
-        # Update function of main menu scene
-        if self.current_scene == SceneManager.Scenes.main_menu:
-
-            self.main_menu_scene.update()
-        # Update function of dungeon scene
-        elif self.current_scene == SceneManager.Scenes.dungeon:
-
-            self.dungeon_scene.update()
+        # Call the update function of current scene
+        SceneManager.Scene_Manager.update()
 
     def draw(self):
 
-        # Draw function of main menu scene
-        if self.current_scene == SceneManager.Scenes.main_menu:
-
-            self.main_menu_scene.draw()
-        # Draw function of dungeon scene
-        elif self.current_scene == SceneManager.Scenes.dungeon:
-
-            self.dungeon_scene.draw()
+        # Call the draw function of current scene
+        SceneManager.Scene_Manager.draw()
